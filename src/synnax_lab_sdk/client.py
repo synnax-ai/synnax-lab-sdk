@@ -1,3 +1,5 @@
+import os
+
 from synnax_lab_sdk.api_clients.dataset import PublicCompanyDatasetClient
 from synnax_lab_sdk.api_clients.prediction_submission import (
     PublicCompanyPredictionSubmissionClient,
@@ -44,4 +46,23 @@ class SynnaxLabClient:
         print(
             f"You have {pretty_timedelta(duration_remaining)} remaining to train and submit your predictions"
         )
+        self.dataset_date = download_info["date"]
         return files
+
+    def submit_predictions(self, submission_file_path: str) -> None:
+        upload_info = self.prediction_submission_client.create_submission(
+            {
+                "datasetDate": self.dataset_date,
+                "filename": os.path.basename(submission_file_path),
+            }
+        )
+        print(
+            f'Uploading submission {upload_info["id"]} for {upload_info["datasetDate"]}...'
+        )
+        self.files_client.upload_submission(
+            submission_file_path, upload_info["uploadUrl"]
+        )
+        print(f'Uploaded submission {upload_info["id"]}')
+
+    def get_past_submissions(self):
+        return self.prediction_submission_client.list_submissions()

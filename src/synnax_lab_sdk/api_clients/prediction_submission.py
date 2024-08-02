@@ -26,7 +26,7 @@ class CreateSubmissionRequest(TypedDict):
 
 
 class CreateSubmissionResponse(Submission):
-    pass
+    uploadUrl: str
 
 
 class ListSubmissionsResponse(TypedDict):
