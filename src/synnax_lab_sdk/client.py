@@ -1,8 +1,10 @@
 import os
+from typing import List
 
 from synnax_lab_sdk.api_clients.dataset import PublicCompanyDatasetClient
 from synnax_lab_sdk.api_clients.prediction_submission import (
     PublicCompanyPredictionSubmissionClient,
+    Submission,
 )
 from synnax_lab_sdk.constants import (
     PUBLIC_COMPANY_DATASET_URL,
@@ -12,6 +14,10 @@ from synnax_lab_sdk.files_client import DatasetFilePaths, FilesClient
 from synnax_lab_sdk.helpers.timedelta import iso_to_timedelta, pretty_timedelta
 from synnax_lab_sdk.http_client.bearer_token import HttpBearerTokenClient
 from synnax_lab_sdk.http_client.request import RequestHttpClient
+
+
+class DatasetFiles(DatasetFilePaths):
+    dataset_date: str
 
 
 class SynnaxLabClient:
@@ -34,7 +40,7 @@ class SynnaxLabClient:
         )
         self.files_client = FilesClient(self.working_data_folder_path)
 
-    def get_datasets(self) -> DatasetFilePaths:
+    def get_datasets(self) -> DatasetFiles:
         download_info = self.dataset_client.download_datasets()
         print(f'Downloading datasets for {download_info["date"]}...')
         files = self.files_client.download_and_extract_datasets(
@@ -46,13 +52,12 @@ class SynnaxLabClient:
         print(
             f"You have {pretty_timedelta(duration_remaining)} remaining to train and submit your predictions"
         )
-        self.dataset_date = download_info["date"]
-        return files
+        return {**files, "dataset_date": download_info["date"]}
 
-    def submit_predictions(self, submission_file_path: str) -> None:
+    def submit_predictions(self, dataset_date: str, submission_file_path: str) -> None:
         upload_info = self.prediction_submission_client.create_submission(
             {
-                "datasetDate": self.dataset_date,
+                "datasetDate": dataset_date,
                 "filename": os.path.basename(submission_file_path),
             }
         )
@@ -64,5 +69,24 @@ class SynnaxLabClient:
         )
         print(f'Uploaded submission {upload_info["id"]}')
 
-    def get_past_submissions(self):
-        return self.prediction_submission_client.list_submissions()
+    def get_past_submissions(self) -> List[Submission]:
+        past_submissions = self.prediction_submission_client.list_submissions()
+        print(
+            "{:<38} {:<12} {:<20} {:<20}".format(
+                "ID",
+                "Date",
+                "Status",
+                "Score",
+            )
+        )
+        for submission in past_submissions["items"]:
+            print(
+                "{:<38} {:<12} {:<20} {:<20}".format(
+                    submission.get("id"),
+                    submission.get("datasetDate"),
+                    submission.get("status"),
+                    submission.get("confidenceScore", "N/A"),
+                )
+            )
+
+        return past_submissions["items"]
