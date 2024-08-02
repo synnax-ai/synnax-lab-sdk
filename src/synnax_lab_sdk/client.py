@@ -26,10 +26,12 @@ class SynnaxLabClient:
         self,
         api_key: str,
         working_data_folder_path: str = "synnax-data",
+        verbose: bool = True,
         dataset_api_url: str = PUBLIC_COMPANY_DATASET_URL,
         prediction_submission_api_url: str = PUBLIC_COMPANY_PREDICTION_SUBMISSION_URL,
     ):
         self.working_data_folder_path = working_data_folder_path
+        self.verbose = verbose
         self.dataset_client = PublicCompanyDatasetClient(
             HttpBearerTokenClient(RequestHttpClient(dataset_api_url), lambda: api_key)
         )
@@ -39,20 +41,22 @@ class SynnaxLabClient:
                 lambda: api_key,
             )
         )
-        self.files_client = FilesClient(self.working_data_folder_path)
+        self.files_client = FilesClient(self.working_data_folder_path, verbose)
 
     def get_datasets(self) -> DatasetFiles:
         download_info = self.dataset_client.download_datasets()
-        print(f'Downloading datasets for {download_info["date"]}...')
+        if self.verbose:
+            print(f'Downloading datasets for {download_info["date"]}...')
         files = self.files_client.download_and_extract_datasets(
             download_info["fileUrl"]
         )
         duration_remaining = iso_to_timedelta(
             download_info["durationLeftForSubmissions"]
         )
-        print(
-            f"You have {pretty_timedelta(duration_remaining)} remaining to train and submit your predictions"
-        )
+        if self.verbose:
+            print(
+                f"You have {pretty_timedelta(duration_remaining)} remaining to train and submit your predictions"
+            )
         return {**files, "dataset_date": download_info["date"]}
 
     def submit_predictions(self, dataset_date: str, submission_file_path: str) -> None:
@@ -62,16 +66,22 @@ class SynnaxLabClient:
                 "filename": os.path.basename(submission_file_path),
             }
         )
-        print(
-            f'Uploading submission {upload_info["id"]} for {upload_info["datasetDate"]}...'
-        )
+        if self.verbose:
+            print(
+                f'Uploading submission {upload_info["id"]} for {upload_info["datasetDate"]}...'
+            )
         self.files_client.upload_submission(
             submission_file_path, upload_info["uploadUrl"]
         )
-        print(f'Uploaded submission {upload_info["id"]}')
+        if self.verbose:
+            print(f'Uploaded submission {upload_info["id"]}')
 
     def get_past_submissions(self) -> List[Submission]:
         past_submissions = self.prediction_submission_client.list_submissions()
+
+        if not self.verbose:
+            return past_submissions["items"]
+
         print(
             "{:<38} {:<12} {:<20} {:<8} {:<21} {:<20}".format(
                 "ID",
