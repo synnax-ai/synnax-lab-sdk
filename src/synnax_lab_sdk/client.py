@@ -1,4 +1,5 @@
 import os
+from datetime import datetime, timezone
 from typing import List
 
 from synnax_lab_sdk.api_clients.dataset import PublicCompanyDatasetClient
@@ -72,20 +73,35 @@ class SynnaxLabClient:
     def get_past_submissions(self) -> List[Submission]:
         past_submissions = self.prediction_submission_client.list_submissions()
         print(
-            "{:<38} {:<12} {:<20} {:<20}".format(
+            "{:<38} {:<12} {:<20} {:<8} {:<21} {:<20}".format(
                 "ID",
-                "Date",
+                "Dataset Date",
                 "Status",
                 "Score",
+                "Uploaded At",
+                "Filename",
             )
         )
         for submission in past_submissions["items"]:
+            confidence_score = "N/A"
+            if submission.get("confidenceScore") is not None:
+                confidence_score = str(round(submission["confidenceScore"], 4))
+
+            uploaded_at = (
+                datetime.fromisoformat(submission["uploadedAt"])
+                .replace(tzinfo=timezone.utc)
+                .astimezone(tz=None)
+                .strftime("%Y-%m-%d %H:%M:%S")
+            )
+
             print(
-                "{:<38} {:<12} {:<20} {:<20}".format(
+                "{:<38} {:<12} {:<20} {:<8} {:<21} {:<20}".format(
                     submission.get("id"),
                     submission.get("datasetDate"),
                     submission.get("status"),
-                    submission.get("confidenceScore", "N/A"),
+                    confidence_score,
+                    uploaded_at,
+                    submission.get("originalFilename", "N/A"),
                 )
             )
 
