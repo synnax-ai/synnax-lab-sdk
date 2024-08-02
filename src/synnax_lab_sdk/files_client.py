@@ -5,6 +5,7 @@ from typing import TypedDict
 
 import requests
 from tqdm import tqdm
+from tqdm.utils import CallbackIOWrapper
 
 
 class DatasetFilePaths(TypedDict):
@@ -62,3 +63,12 @@ class FilesClient:
                 extracted_folder_path, "data_dictionary.txt"
             ),
         }
+
+    def upload_submission(self, submission_file_path: str, upload_url: str) -> None:
+        file_size = os.stat(submission_file_path).st_size
+        with open(submission_file_path, "rb") as file:
+            with tqdm(
+                total=file_size, unit="B", unit_scale=True, unit_divisor=1024
+            ) as progress_bar:
+                wrapped_file = CallbackIOWrapper(progress_bar.update, file, "read")
+                requests.put(upload_url, data=wrapped_file)
