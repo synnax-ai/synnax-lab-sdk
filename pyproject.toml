@@ -1,0 +1,26 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "synnax-lab-sdk"
+description = "Synnax Lab SDK for downloading training data and uploading predictions"
+readme = "README.md"
+# version = "0.0.0"                                                                      # This will be replaced by hatchling
+requires-python = ">=3.9"
+keywords = ["synnax"]
+dependencies = ["requests"]
+dynamic = ["version"]
+
+[project.optional-dependencies]
+dev = ["mypy", "black", "types-requests", "hatch"]
+all = ["synnax-lab-sdk[dev]"]
+
+[project.urls]
+Homepage = "https://synnax.ai"
+
+[tool.hatch.build.targets.sdist]
+include = ["/src"]
+
+[tool.hatch.version]
+path = "src/synnax_lab_sdk/__about__.py"

@@ -1,0 +1,32 @@
+name: Linting and code formatting checks
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  lint-format-check:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: pip install .[all]
+
+      - name: Linting check
+        run: mypy src
+
+      - name: Formatting check
+        run: black src --check
