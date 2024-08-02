@@ -19,8 +19,9 @@ class DatasetFilePaths(TypedDict):
 
 
 class FilesClient:
-    def __init__(self, working_data_folder_path: str):
+    def __init__(self, working_data_folder_path: str, show_progress: bool = False):
         self.working_data_folder_path = working_data_folder_path
+        self.show_progress = show_progress
 
     def download_and_extract_datasets(self, download_url: str) -> DatasetFilePaths:
         download_file_path = os.path.join(
@@ -35,7 +36,12 @@ class FilesClient:
             response.raise_for_status()
             total_size = int(response.headers.get("content-length", 0))
             chunk_size = 1024
-            with tqdm(total=total_size, unit="B", unit_scale=True) as progress_bar:
+            with tqdm(
+                total=total_size,
+                unit="B",
+                unit_scale=True,
+                disable=not self.show_progress,
+            ) as progress_bar:
                 with open(download_file_path, "wb") as file:
                     for chunk in response.iter_content(chunk_size):
                         progress_bar.update(len(chunk))
@@ -68,7 +74,11 @@ class FilesClient:
         file_size = os.stat(submission_file_path).st_size
         with open(submission_file_path, "rb") as file:
             with tqdm(
-                total=file_size, unit="B", unit_scale=True, unit_divisor=1024
+                total=file_size,
+                unit="B",
+                unit_scale=True,
+                unit_divisor=1024,
+                disable=not self.show_progress,
             ) as progress_bar:
                 wrapped_file = CallbackIOWrapper(progress_bar.update, file, "read")
                 requests.put(upload_url, data=wrapped_file)
