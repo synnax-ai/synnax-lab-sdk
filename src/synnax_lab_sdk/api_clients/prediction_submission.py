@@ -1,6 +1,12 @@
-from typing import Dict, List, NotRequired, TypedDict, cast
+import sys
+from typing import Dict, List, TypedDict, cast
 
 from synnax_lab_sdk.http_client.bearer_token import HttpBearerTokenClient
+
+if sys.version_info >= (3, 11):
+    from typing import NotRequired
+else:
+    from typing_extensions import NotRequired
 
 
 class Submission(TypedDict):
