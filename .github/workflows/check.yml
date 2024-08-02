@@ -1,0 +1,9 @@
+name: Check
+
+on:
+  pull_request:
+
+jobs:
+  check:
+    secrets: inherit
+    uses: ./.github/workflows/lint-format-check.yml

@@ -12,7 +12,7 @@ dependencies = ["requests", "tqdm", "inflect"]
 dynamic = ["version"]
 
 [project.optional-dependencies]
-dev = ["mypy", "black", "types-requests", "types-tqdm", "hatch"]
+dev = ["mypy", "black", "types-requests", "types-tqdm"]
 all = ["synnax-lab-sdk[dev]"]
 
 [project.urls]

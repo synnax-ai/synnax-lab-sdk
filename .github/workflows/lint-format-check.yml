@@ -1,10 +1,7 @@
 name: Linting and code formatting checks
 
 on:
-  pull_request:
-  push:
-    branches:
-      - master
+  workflow_call:
 
 jobs:
   lint-format-check:
@@ -23,7 +20,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install dependencies
-        run: pip install .[all]
+        run: python3 -m pip install .[all]
 
       - name: Linting check
         run: mypy src
