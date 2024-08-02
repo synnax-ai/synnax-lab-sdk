@@ -1,0 +1,39 @@
+name: Check and publish
+
+on:
+  push:
+    tags:
+      - release/*
+
+jobs:
+  check:
+    secrets: inherit
+    uses: ./.github/workflows/lint-format-check.yml
+
+  publish-pypi:
+    needs: [check]
+    runs-on: ubuntu-latest
+    environment: release
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+
+      - name: Install dependencies
+        run: python3 -m pip install --upgrade build hatch twine
+
+      - name: Set package version
+        run: hatch version "$(echo "${{ github.ref_name }}" | awk -F'release/v' '{print $2}')"
+
+      - name: Build
+        run: python3 -m build
+
+      - name: Publish to PyPI
+        run: python3 -m twine upload dist/*
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
