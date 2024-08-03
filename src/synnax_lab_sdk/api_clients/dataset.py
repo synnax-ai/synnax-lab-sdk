@@ -6,7 +6,7 @@ from synnax_lab_sdk.http_client.bearer_token import HttpBearerTokenClient
 class DownloadDatasetsResponse(TypedDict):
     date: str
     fileUrl: str
-    durationLeftForSubmissions: str
+    submissionDeadline: str
 
 
 class PublicCompanyDatasetClient:
