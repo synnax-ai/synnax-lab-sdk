@@ -12,7 +12,7 @@ from synnax_lab_sdk.constants import (
     PUBLIC_COMPANY_PREDICTION_SUBMISSION_URL,
 )
 from synnax_lab_sdk.files_client import DatasetFilePaths, FilesClient
-from synnax_lab_sdk.helpers.timedelta import iso_to_timedelta, pretty_timedelta
+from synnax_lab_sdk.helpers.timedelta import pretty_timedelta
 from synnax_lab_sdk.http_client.bearer_token import HttpBearerTokenClient
 from synnax_lab_sdk.http_client.request import RequestHttpClient
 
@@ -50,12 +50,15 @@ class SynnaxLabClient:
         files = self.files_client.download_and_extract_datasets(
             download_info["fileUrl"]
         )
-        duration_remaining = iso_to_timedelta(
-            download_info["durationLeftForSubmissions"]
+        deadline = (
+            datetime.fromisoformat(download_info["submissionDeadline"])
+            .replace(tzinfo=timezone.utc)
+            .astimezone(tz=None)
         )
+        duration_remaining = deadline - datetime.now(tz=timezone.utc)
         if self.verbose:
             print(
-                f"You have {pretty_timedelta(duration_remaining)} remaining to train and submit your predictions"
+                f"You have {pretty_timedelta(duration_remaining)} remaining until {deadline.strftime('%d/%m/%Y %H:%M:%S')} to train and submit your predictions for this dataset"
             )
         return {**files, "dataset_date": download_info["date"]}
 
