@@ -17,4 +17,4 @@ files = synnax_lab_client.get_datasets()
 synnax_lab_client.submit_predictions(files["dataset_date"], submissions_path)
 ```
 
-Sample file also [available here](https://github.com/synnax-ai/synnax-lab-sdk/blob/master/src/samples/main.py)
+Sample file also [available here](https://github.com/synnax-ai/synnax-lab-sdk/blob/master/samples/main.py)
