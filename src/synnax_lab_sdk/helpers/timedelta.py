@@ -1,4 +1,3 @@
-import re
 from datetime import timedelta
 
 import inflect

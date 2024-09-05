@@ -6,13 +6,13 @@ build-backend = "hatchling.build"
 name = "synnax-lab-sdk"
 description = "Synnax Lab SDK for downloading training data and uploading predictions"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 keywords = ["synnax"]
-dependencies = ["requests", "tqdm", "inflect"]
+dependencies = ["requests", "tqdm", "inflect", "python-dateutil"]
 dynamic = ["version"]
 
 [project.optional-dependencies]
-dev = ["mypy", "black", "types-requests", "types-tqdm"]
+dev = ["mypy", "black", "types-requests", "types-tqdm", "types-python-dateutil"]
 all = ["synnax-lab-sdk[dev]"]
 
 [project.urls]

@@ -1,6 +1,8 @@
 import os
 from datetime import datetime, timezone
 from typing import List
+from dateutil import parser
+
 
 from synnax_lab_sdk.api_clients.dataset import PublicCompanyDatasetClient
 from synnax_lab_sdk.api_clients.prediction_submission import (
@@ -83,7 +85,7 @@ class SynnaxLabClient:
             download_info["fileUrl"]
         )
         deadline = (
-            datetime.fromisoformat(download_info["submissionDeadline"])
+            parser.parse(download_info["submissionDeadline"])
             .replace(tzinfo=timezone.utc)
             .astimezone(tz=None)
         )
