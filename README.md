@@ -2,13 +2,13 @@
 
 ## Installation
 
-```
-pip install synnax-lab-sdk
+```Shell
+> pip install synnax-lab-sdk
 ```
 
 ## Usage
 
-```
+```Python
 from synnax_lab_sdk.client import SynnaxLabClient
 
 synnax_lab_client = SynnaxLabClient(api_key="your_api_key")
