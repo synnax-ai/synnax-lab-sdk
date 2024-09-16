@@ -19,4 +19,4 @@ synnax_lab_client.submit_predictions(files["dataset_date"], submissions_path)
 
 SDK usage sample file also [available here](https://github.com/synnax-ai/synnax-lab-sdk/blob/master/samples/main.py)
 
-Synnax Lab onboarding manual, including steps to register, download data and make a submission is [available here](https://github.com/synnax-ai/synnax-lab-sdk/blob/master/samples/onboarding_manual.ipynb)
+Synnax Lab onboarding manual, including steps to register, download data and make a submission is [available here](https://github.com/synnax-ai/synnax-lab-sdk/blob/master/tutorials/onboarding_manual.ipynb)
