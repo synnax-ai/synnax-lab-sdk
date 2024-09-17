@@ -163,7 +163,7 @@ class SynnaxLabClient:
                 confidence_score = str(round(submission["confidenceScore"], 4))
 
             uploaded_at = (
-                datetime.fromisoformat(submission["uploadedAt"])
+                parser.parse(submission["uploadedAt"])
                 .replace(tzinfo=timezone.utc)
                 .astimezone(tz=None)
                 .strftime("%Y-%m-%d %H:%M:%S")
