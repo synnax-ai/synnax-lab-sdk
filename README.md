@@ -3,7 +3,7 @@
 ## Installation
 
 ```Shell
-> pip install synnax-lab-sdk
+pip install synnax-lab-sdk
 ```
 
 ## Usage
