@@ -19,7 +19,7 @@ class RequestHttpClient(HttpClient):
         )
         json_obj = response.json()
 
-        if response.status_code < 200 | response.status_code >= 300:
+        if response.status_code < 200 or response.status_code >= 300:
             raise HttpError(json_obj["message"], response.status_code)
 
         return json_obj
