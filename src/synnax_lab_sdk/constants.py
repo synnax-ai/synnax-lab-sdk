@@ -1,4 +1,4 @@
-PUBLIC_COMPANY_DATASET_URL: str = "https://public-company-dataset-api.synnax.app"
-PUBLIC_COMPANY_PREDICTION_SUBMISSION_URL: str = (
-    "https://public-company-prediction-submission-api.synnax.app"
+COMPANY_DATASET_URL: str = "https://company-dataset-api.synnax.app"
+COMPANY_PREDICTION_SUBMISSION_URL: str = (
+    "https://company-prediction-submission-api.synnax.app"
 )
