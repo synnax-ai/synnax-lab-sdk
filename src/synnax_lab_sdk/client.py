@@ -1,26 +1,36 @@
 import os
 from datetime import datetime, timezone
-from typing import List
+from typing import List, Optional, TypedDict, Union
 from dateutil import parser
 
 
-from synnax_lab_sdk.api_clients.dataset import PublicCompanyDatasetClient
+from synnax_lab_sdk.api_clients.dataset import CompanyDatasetClient
 from synnax_lab_sdk.api_clients.prediction_submission import (
-    PublicCompanyPredictionSubmissionClient,
+    CompanyPredictionSubmissionClient,
     Submission,
 )
 from synnax_lab_sdk.constants import (
-    PUBLIC_COMPANY_DATASET_URL,
-    PUBLIC_COMPANY_PREDICTION_SUBMISSION_URL,
+    COMPANY_DATASET_URL,
+    COMPANY_PREDICTION_SUBMISSION_URL,
 )
-from synnax_lab_sdk.files_client import DatasetFilePaths, FilesClient
+from synnax_lab_sdk.files_client import (
+    FilesClient,
+    MacroDataFilePaths,
+)
 from synnax_lab_sdk.helpers.timedelta import pretty_timedelta
 from synnax_lab_sdk.http_client.bearer_token import HttpBearerTokenClient
 from synnax_lab_sdk.http_client.request import RequestHttpClient
 
 
-class DatasetFiles(DatasetFilePaths):
+class DatasetFiles(TypedDict):
     dataset_date: str
+    x_train_path: str
+    targets_train_path: str
+    x_forward_looking_path: str
+    sample_submission_path: str
+    data_dictionary_path: str
+    macro_train_path: Optional[str]
+    macro_forward_looking_path: Optional[str]
 
 
 class SynnaxLabClient:
@@ -33,8 +43,8 @@ class SynnaxLabClient:
         api_key: str,
         working_data_folder_path: str = "synnax-data",
         verbose: bool = True,
-        dataset_api_url: str = PUBLIC_COMPANY_DATASET_URL,
-        prediction_submission_api_url: str = PUBLIC_COMPANY_PREDICTION_SUBMISSION_URL,
+        dataset_api_url: str = COMPANY_DATASET_URL,
+        prediction_submission_api_url: str = COMPANY_PREDICTION_SUBMISSION_URL,
     ):
         """
         Initializes the Synnax Lab client.
@@ -50,10 +60,10 @@ class SynnaxLabClient:
         """
         self.working_data_folder_path = working_data_folder_path
         self.verbose = verbose
-        self.dataset_client = PublicCompanyDatasetClient(
+        self.dataset_client = CompanyDatasetClient(
             HttpBearerTokenClient(RequestHttpClient(dataset_api_url), lambda: api_key)
         )
-        self.prediction_submission_client = PublicCompanyPredictionSubmissionClient(
+        self.prediction_submission_client = CompanyPredictionSubmissionClient(
             HttpBearerTokenClient(
                 RequestHttpClient(prediction_submission_api_url),
                 lambda: api_key,
@@ -61,29 +71,47 @@ class SynnaxLabClient:
         )
         self.files_client = FilesClient(self.working_data_folder_path, verbose)
 
-    def get_datasets(self) -> DatasetFiles:
+    def get_datasets(
+        self, with_macro_data: bool
+    ) -> Union[DatasetFiles, MacroDataFilePaths]:
         """
         Downloads today's datasets from the Synnax Lab API and extracts them.
 
-        Parameters: None
+        Parameters:
+            with_macro_data (bool):
+                Whether to download macro-economic data as well.
 
         Returns:
             DatasetFiles: A dictionary containing the paths to the downloaded datasets.
                 DatasetFiles is a TypedDict with the following keys:
+                    dataset_date: str
                     x_train_path: str
                     targets_train_path: str
                     x_forward_looking_path: str
-                    macro_train_path: str
-                    macro_forward_looking_path: str
                     sample_submission_path: str
                     data_dictionary_path: str
+                    macro_train_path: Optional[str]
+                    macro_forward_looking_path: Optional[str]
         """
         download_info = self.dataset_client.download_datasets()
         if self.verbose:
             print(f'Downloading datasets for {download_info["date"]}...')
-        files = self.files_client.download_and_extract_datasets(
+        dataset_file_paths = self.files_client.download_and_extract_datasets(
             download_info["fileUrl"]
         )
+        dataset_files: DatasetFiles = {
+            "dataset_date": download_info["date"],
+            **dataset_file_paths,
+            "macro_train_path": None,
+            "macro_forward_looking_path": None,
+        }
+
+        if with_macro_data:
+            macro_files = self.files_client.download_and_extract_macro_data(
+                download_info["macroFileUrl"]
+            )
+            dataset_files = {**dataset_files, **macro_files}
+
         deadline = (
             parser.parse(download_info["submissionDeadline"])
             .replace(tzinfo=timezone.utc)
@@ -94,7 +122,7 @@ class SynnaxLabClient:
             print(
                 f"You have {pretty_timedelta(duration_remaining)} remaining until {deadline.strftime('%d/%m/%Y %H:%M:%S')} to train and submit your predictions for this dataset"
             )
-        return {**files, "dataset_date": download_info["date"]}
+        return dataset_files
 
     def submit_predictions(self, dataset_date: str, submission_file_path: str) -> None:
         """

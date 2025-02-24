@@ -6,10 +6,11 @@ from synnax_lab_sdk.http_client.bearer_token import HttpBearerTokenClient
 class DownloadDatasetsResponse(TypedDict):
     date: str
     fileUrl: str
+    macroFileUrl: str
     submissionDeadline: str
 
 
-class PublicCompanyDatasetClient:
+class CompanyDatasetClient:
     def __init__(self, http_client: HttpBearerTokenClient):
         self.http_client = http_client
 

@@ -12,10 +12,13 @@ class DatasetFilePaths(TypedDict):
     x_train_path: str
     targets_train_path: str
     x_forward_looking_path: str
-    macro_train_path: str
-    macro_forward_looking_path: str
     sample_submission_path: str
     data_dictionary_path: str
+
+
+class MacroDataFilePaths(TypedDict):
+    macro_train_path: str
+    macro_forward_looking_path: str
 
 
 class FilesClient:
@@ -58,15 +61,43 @@ class FilesClient:
             "x_forward_looking_path": os.path.join(
                 extracted_folder_path, "X_forward_looking.csv"
             ),
-            "macro_train_path": os.path.join(extracted_folder_path, "macro_train.csv"),
-            "macro_forward_looking_path": os.path.join(
-                extracted_folder_path, "macro_forward_looking.csv"
-            ),
             "sample_submission_path": os.path.join(
                 extracted_folder_path, "sample_submission.csv"
             ),
             "data_dictionary_path": os.path.join(
                 extracted_folder_path, "data_dictionary.txt"
+            ),
+        }
+
+    def download_and_extract_macro_data(self, download_url: str) -> MacroDataFilePaths:
+        download_file_path = os.path.join(self.working_data_folder_path, "macro.tar.gz")
+        extracted_folder_path = os.path.join(self.working_data_folder_path, "datasets")
+
+        Path(self.working_data_folder_path).mkdir(parents=True, exist_ok=True)
+        Path(extracted_folder_path).mkdir(parents=True, exist_ok=True)
+
+        with requests.get(download_url, stream=True) as response:
+            response.raise_for_status()
+            total_size = int(response.headers.get("content-length", 0))
+            chunk_size = 1024
+            with tqdm(
+                total=total_size,
+                unit="B",
+                unit_scale=True,
+                disable=not self.show_progress,
+            ) as progress_bar:
+                with open(download_file_path, "wb") as file:
+                    for chunk in response.iter_content(chunk_size):
+                        progress_bar.update(len(chunk))
+                        file.write(chunk)
+
+        with tarfile.open(download_file_path) as tar:
+            tar.extractall(extracted_folder_path)
+
+        return {
+            "macro_train_path": os.path.join(extracted_folder_path, "macro_train.csv"),
+            "macro_forward_looking_path": os.path.join(
+                extracted_folder_path, "macro_forward_looking.csv"
             ),
         }
 
