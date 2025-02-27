@@ -4,7 +4,7 @@ from synnax_lab_sdk.client import SynnaxLabClient
 def main():
     synnax_lab_client = SynnaxLabClient(api_key="your_api_key")
 
-    files = synnax_lab_client.get_datasets()
+    files = synnax_lab_client.get_datasets(with_macro_data=False)
 
     # TODO: Train your model and generate predictions
     submissions_path = files["sample_submission_path"]

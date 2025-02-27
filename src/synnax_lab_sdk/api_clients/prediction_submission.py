@@ -33,7 +33,7 @@ class ListSubmissionsResponse(TypedDict):
     items: List[Submission]
 
 
-class PublicCompanyPredictionSubmissionClient:
+class CompanyPredictionSubmissionClient:
     def __init__(self, http_client: HttpBearerTokenClient):
         self.http_client = http_client
 
