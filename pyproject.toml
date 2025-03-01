@@ -22,4 +22,4 @@ Homepage = "https://synnax.ai"
 include = ["/src"]
 
 [tool.hatch.version]
-path = "src/synnax_lab_sdk/__about__.py"
+path = "src/synnax_lab_sdk/__init__.py"
